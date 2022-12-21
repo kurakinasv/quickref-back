@@ -3,6 +3,7 @@ const { DataTypes } = require('sequelize'); // для описания поле�
 
 // Описываем модели данных
 
+// todo delete created_at, last_update, date_upload
 const User = sequelize.define('user', {
     email: { type: DataTypes.STRING, allowNull: false, unique: true },
     password: { type: DataTypes.STRING, allowNull: false },
@@ -15,7 +16,7 @@ const User = sequelize.define('user', {
 });
 
 const Collection = sequelize.define('collection', {
-    name: { type: DataTypes.STRING, allowNull: false, unique: true },
+    name: { type: DataTypes.STRING, allowNull: false },
     cover_image: { type: DataTypes.STRING },
     image_amount: { type: DataTypes.INTEGER, defaultValue: 0 },
     last_update: { type: DataTypes.DATE },
