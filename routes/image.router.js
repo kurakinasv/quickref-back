@@ -3,7 +3,7 @@ const imageController = require('./controllers/image.controller');
 const router = new Router();
 
 router.get('/images', imageController.getAllImages);
-router.get('/images/:id', imageController.getImage);
+router.get('/:id', imageController.getImage);
 router.post('/upload', imageController.uploadImage);
 router.post('/edit', imageController.editImageInfo);
 router.delete('/delete', imageController.deleteImage);
