@@ -2,13 +2,7 @@ const uuid = require('uuid');
 const path = require('path');
 const { Image } = require('../../models/models');
 const ApiError = require('../../middleware/error/ApiError');
-const {
-    checkStringValue,
-    returnTrimOrNull,
-    isIdTypeValid,
-    isNotNullIdTypeValid,
-    checkNotNullStringValue,
-} = require('./utils');
+const { isIdTypeValid, isNotNullIdTypeValid, checkNotNullStringValue } = require('./utils');
 
 class ImageController {
     // GET api/image/images
@@ -120,8 +114,15 @@ class ImageController {
     deleteImage = async (req, res, next) => {
         try {
             const { id: toDeleteId } = req.body;
+
             if (!isNotNullIdTypeValid(toDeleteId)) {
-                next(ApiError.badRequest('Невалидный id'));
+                return next(ApiError.badRequest('Невалидный id'));
+            }
+
+            const toDelete = await Image.findByPk(Number(toDeleteId));
+
+            if (!toDelete) {
+                return next(ApiError.badRequest('Изображение не найдено'));
             }
 
             await Image.destroy({ where: { id: Number(toDeleteId) } });

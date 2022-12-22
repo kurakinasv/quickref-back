@@ -8,6 +8,11 @@ const checkNotNullStringValue = (value) => {
     return value === undefined || (typeof value === 'string' && trimmedValue !== '');
 };
 
+const checkNotNullStringValueOnCreate = (value) => {
+    const trimmedValue = value ? value.trim() : value;
+    return value && typeof value === 'string' && trimmedValue !== '';
+};
+
 const checkStringValue = (value) => {
     return value === undefined || typeof value === 'string';
 };
@@ -31,4 +36,5 @@ module.exports = {
     returnTrimOrNull,
     isIdTypeValid,
     isNotNullIdTypeValid,
+    checkNotNullStringValueOnCreate,
 };
