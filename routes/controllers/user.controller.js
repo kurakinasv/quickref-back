@@ -7,6 +7,7 @@ const { User, Collection } = require('../../models/models');
 // .findAll() - возвращает все записи
 // .findOne({ where: {...} }) - возвращает одну запись
 
+// todo delete logs
 const createToken = (userId, isAdmin) => {
     console.log('createToken', isAdmin);
     const token = jwt.sign({ userId, isAdmin }, process.env.JWT_SECRET, {
@@ -15,7 +16,27 @@ const createToken = (userId, isAdmin) => {
     return token;
 };
 
+/**
+ * Returns true when string is valid to save on db
+ * @param {string} value
+ * @returns {boolean}
+ */
+const checkNotNullStringValue = (value) => {
+    const trimmedValue = value ? value.trim() : value;
+    return value === undefined || (typeof value === 'string' && trimmedValue !== '');
+};
+
+const checkStringValue = (value) => {
+    return value === undefined || typeof value === 'string';
+};
+
+const returnTrimOrNull = (value) => {
+    const trimmed = value.trim();
+    return trimmed ? trimmed : null;
+};
+
 class UserController {
+    // GET /api/user/auth
     isAuth = async (req, res, next) => {
         try {
             console.log('isAuth req.user', req.user);
@@ -38,16 +59,59 @@ class UserController {
         }
     };
 
-    editUser = async (req, res) => {
+    // POST /api/user/edit
+    // req.body = { id, email, name, surname, usename } -- id: number | string, остальное string
+    // @returns user object if successfully edited
+    editUser = async (req, res, next) => {
         try {
-        } catch (err) {}
+            // todo maybe add id
+            const { id, email, name, surname, username, about } = req.body;
+
+            console.log(req.body);
+
+            if (!id || (typeof id !== 'number' && typeof id !== 'string')) {
+                next(ApiError.badRequest('Некорректный id'));
+            }
+
+            const user = await User.findOne({ where: { id: Number(id) } });
+
+            if (!user) {
+                next(ApiError.badRequest('Пользователь не найден'));
+            }
+
+            if (!checkNotNullStringValue(email) || !checkNotNullStringValue(username)) {
+                next(ApiError.badRequest('Поля не могут быть пустыми'));
+            }
+
+            if (!checkStringValue(name) || !checkStringValue(surname) || !checkStringValue(about)) {
+                next(ApiError.badRequest('Некорректно введенные данные'));
+            }
+
+            // (handled undefined values must not be rewritten)
+            user.email = email ? email.trim() : user.email;
+            user.name = name ? returnTrimOrNull(name) : user.name;
+            user.surname = surname ? returnTrimOrNull(surname) : user.surname;
+            user.username = username ? username.trim() : user.username;
+            user.about = about ? returnTrimOrNull(about) : user.about;
+
+            // update nessesary info
+            await user.save();
+
+            res.status(200).json(user);
+        } catch (err) {
+            next(ApiError.badRequest(err.message));
+        }
     };
 
+    // POST /api/user/login
     login = async (req, res) => {
         try {
             const { email, password } = req.body;
 
-            const user = await User.findOne({ where: { email } });
+            // remove leading and trailing white space
+            const trimmedEmail = email ? email.trim() : email;
+
+            const user = await User.findOne({ where: { email: trimmedEmail } });
 
             if (!user) {
                 next(ApiError.badRequest('Пользователь не найден'));
@@ -67,15 +131,18 @@ class UserController {
         }
     };
 
+    // POST /api/user/register
     register = async (req, res, next) => {
         try {
             const { email, password, is_admin } = req.body;
 
-            if (!email || !password) {
+            if (!email || !password || typeof email !== 'string' || typeof password !== 'string') {
                 next(ApiError.badRequest('Некорректные данные'));
             }
 
-            const isExist = await User.findOne({ where: { email } });
+            const trimmedEmail = email.trim();
+
+            const isExist = await User.findOne({ where: { email: trimmedEmail } });
 
             if (isExist) {
                 next(ApiError.badRequest('Такой пользователь уже существует'));
@@ -84,7 +151,7 @@ class UserController {
             const hash = await bcrypt.hash(password, 5);
 
             const user = await User.create({
-                email,
+                email: trimmedEmail,
                 password: hash,
                 is_admin,
                 created_at: new Date(),
