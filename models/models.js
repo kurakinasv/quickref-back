@@ -36,10 +36,10 @@ const Category = sequelize.define('category', {
 });
 
 const Author = sequelize.define('author', {
-    username: { type: DataTypes.STRING, allowNull: false, unique: true },
+    nickname: { type: DataTypes.STRING, allowNull: false, unique: true },
     name: { type: DataTypes.STRING },
     surname: { type: DataTypes.STRING },
-    social_media: { type: DataTypes.STRING },
+    social_media: { type: DataTypes.STRING, unique: true },
 });
 
 const ImageCollection = sequelize.define('image_collection', {});
