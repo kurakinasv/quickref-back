@@ -83,7 +83,7 @@ class CategoryController {
                 return next(ApiError.badRequest('Такой категории не существует'));
             }
 
-            toEdit.category_name = category_name ? category_name.trim() : toEdit.category_name;
+            toEdit.category_name = category_name ? trimmedName : toEdit.category_name;
             toEdit.category_description = category_description
                 ? returnTrimOrNull(category_description)
                 : toEdit.category_description;

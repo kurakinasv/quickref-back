@@ -7,10 +7,16 @@ module.exports = (req, res, next) => {
     }
 
     try {
-        const token = req.headers.authorization.split(' ')[1];
+        const authHeader = req.headers.authorization;
+
+        if (!authHeader) {
+            return next(ApiError.unauthorized('Не передан токен'));
+        }
+
+        const token = authHeader.split(' ')[1];
 
         if (!token) {
-            next(ApiError.unauthorized('Нет авторизации'));
+            return next(ApiError.unauthorized('Нет авторизации'));
         }
 
         const decodedToken = jwt.verify(token, process.env.JWT_SECRET);

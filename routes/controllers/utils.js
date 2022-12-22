@@ -18,7 +18,7 @@ const checkStringValue = (value) => {
 };
 
 const returnTrimOrNull = (value) => {
-    const trimmed = value.trim();
+    const trimmed = String(value).trim();
     return trimmed ? trimmed : null;
 };
 

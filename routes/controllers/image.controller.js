@@ -9,7 +9,7 @@ class ImageController {
     getAllImages = async (req, res, next) => {
         try {
             const images = await Image.findAll();
-            return res.json(images);
+            res.status(200).json(images);
         } catch (err) {
             next(ApiError.badRequest(err.message));
         }
@@ -19,9 +19,14 @@ class ImageController {
     getImage = async (req, res, next) => {
         try {
             const { id } = req.params;
+
+            if (!Number(id)) {
+                return next(ApiError.badRequest('Невалидный id'));
+            }
+
             const image = await Image.findOne({ where: { id: Number(id) } });
 
-            return res.json(image);
+            res.status(200).json(image);
         } catch (err) {
             next(ApiError.badRequest(err.message));
         }
@@ -56,7 +61,7 @@ class ImageController {
             // todo add authorId
             const image = await Image.create({ name: fileName, date_upload, source });
 
-            return res.json(image);
+            res.status(200).json(image);
         } catch (err) {
             next(ApiError.badRequest(err.message));
         }

@@ -2,6 +2,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const ApiError = require('../../middleware/error/ApiError');
 const { User, Collection } = require('../../models/models');
+const { defaultCollectionName } = require('./config');
 const {
     checkNotNullStringValue,
     checkStringValue,
@@ -173,7 +174,10 @@ class UserController {
             });
 
             // favourites -- default collection for each user
-            const collection = await Collection.create({ userId: user.id, name: 'Избранное' });
+            const collection = await Collection.create({
+                userId: user.id,
+                name: defaultCollectionName,
+            });
 
             const token = createToken(user.id, is_admin);
 
