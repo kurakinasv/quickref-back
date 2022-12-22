@@ -25,8 +25,8 @@ const Collection = sequelize.define('collection', {
 
 const Image = sequelize.define('image', {
     name: { type: DataTypes.STRING, allowNull: false, unique: true },
-    date_upload: { type: DataTypes.DATE, allowNull: false },
-    source: { type: DataTypes.STRING },
+    date_upload: { type: DataTypes.DATE },
+    source: { type: DataTypes.STRING, allowNull: false, unique: true },
     // orientation: { type: DataTypes.STRING },
 });
 

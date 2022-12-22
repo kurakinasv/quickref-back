@@ -7,7 +7,13 @@ module.exports = (isAdmin) => (req, res, next) => {
     }
 
     try {
-        const token = req.headers.authorization.split(' ')[1];
+        const authHeader = req.headers.authorization;
+
+        if (!authHeader) {
+            next(ApiError.unauthorized('Не передан токен'));
+        }
+
+        const token = authHeader.split(' ')[1];
 
         if (!token) {
             next(ApiError.unauthorized('Нет авторизации'));

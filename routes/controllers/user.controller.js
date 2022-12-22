@@ -2,6 +2,12 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const ApiError = require('../../middleware/error/ApiError');
 const { User, Collection } = require('../../models/models');
+const {
+    checkNotNullStringValue,
+    checkStringValue,
+    returnTrimOrNull,
+    isNotNullIdTypeValid,
+} = require('./utils');
 
 // .create({params}) - создание сущности
 // .findAll() - возвращает все записи
@@ -14,25 +20,6 @@ const createToken = (userId, isAdmin) => {
         expiresIn: '48h',
     });
     return token;
-};
-
-/**
- * Returns true when string is valid to save on db
- * @param {string} value
- * @returns {boolean}
- */
-const checkNotNullStringValue = (value) => {
-    const trimmedValue = value ? value.trim() : value;
-    return value === undefined || (typeof value === 'string' && trimmedValue !== '');
-};
-
-const checkStringValue = (value) => {
-    return value === undefined || typeof value === 'string';
-};
-
-const returnTrimOrNull = (value) => {
-    const trimmed = value.trim();
-    return trimmed ? trimmed : null;
 };
 
 class UserController {
@@ -103,8 +90,36 @@ class UserController {
         }
     };
 
+    editStatus = async (req, res, next) => {
+        try {
+            const { id, is_admin } = req.body;
+
+            if (!isNotNullIdTypeValid(id)) {
+                next(ApiError.badRequest('Некорректный id'));
+            }
+
+            const user = await User.findOne({ where: { id: Number(id) } });
+
+            if (!user) {
+                next(ApiError.badRequest('Пользователь не найден'));
+            }
+
+            if (typeof is_admin !== 'boolean') {
+                next(ApiError.badRequest('Некорректный тип is_admin'));
+            }
+
+            user.is_admin = is_admin === undefined ? user.is_admin : is_admin;
+
+            await user.save();
+
+            res.status(200).json(user);
+        } catch (err) {
+            next(ApiError.badRequest(err.message));
+        }
+    };
+
     // POST /api/user/login
-    login = async (req, res) => {
+    login = async (req, res, next) => {
         try {
             const { email, password } = req.body;
 
