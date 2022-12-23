@@ -1,5 +1,5 @@
 const ApiError = require('../../middleware/error/ApiError');
-const { Collection, Image } = require('../../models/models');
+const { Collection, Image, ImageCollection } = require('../../models/models');
 const { defaultCollectionName } = require('./config');
 const {
     checkNotNullStringValueOnCreate,
@@ -28,13 +28,21 @@ class CollectionController {
             const { id } = req.params;
             const { userId } = req.user;
 
-            if (!Number(id)) {
-                return next(ApiError.badRequest('Невалидный id коллекции'));
+            const userCollections = await Collection.findAll({ where: { userId } });
+
+            const collectionId = id !== 'fav' ? id : userCollections[0].id;
+
+            const imgCol = await ImageCollection.findAll({ where: { collectionId } });
+
+            console.log('getCollection imgCol', imgCol);
+
+            if (id !== 'fav') {
+                const collection = await Collection.findOne({ where: { id: Number(id), userId } });
+
+                res.status(200).json({ collection, imgCol });
+            } else {
+                res.status(200).json({ ...userCollections[0], imgCol });
             }
-
-            const collection = await Collection.findOne({ where: { id: Number(id), userId } });
-
-            res.status(200).json(collection);
         } catch (err) {
             next(ApiError.badRequest(err.message));
         }

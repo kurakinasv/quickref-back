@@ -1,6 +1,6 @@
 const uuid = require('uuid');
 const path = require('path');
-const { Image } = require('../../models/models');
+const { Image, ImageCollection, Collection } = require('../../models/models');
 const ApiError = require('../../middleware/error/ApiError');
 const { isIdTypeValid, isNotNullIdTypeValid, checkNotNullStringValue } = require('./utils');
 
@@ -33,10 +33,11 @@ class ImageController {
     };
 
     // [admin] POST api/image/upload
-    // req.body = { date_upload: Date, source?: string }
+    // req.body = { date_upload: Date, source?: string, categoryId: number, authorId: number }
     uploadImage = async (req, res, next) => {
         try {
-            const { date_upload, source } = req.body;
+            const info = req.body.info;
+            const { date_upload, source, categoryId, authorId } = JSON.parse(info);
 
             if (!req.files) {
                 return next(ApiError.badRequest('Файлы не были загружены'));
@@ -52,14 +53,19 @@ class ImageController {
                 return next(ApiError.badRequest('Изображение уже существует'));
             }
 
-            const img = req.files.name;
+            const img = req.files.files;
 
             const fileName = uuid.v4() + '.jpg';
 
             img.mv(path.resolve(__dirname, '../..', 'static', fileName));
 
-            // todo add authorId
-            const image = await Image.create({ name: fileName, date_upload, source });
+            const image = await Image.create({
+                name: fileName,
+                date_upload,
+                source,
+                categoryId,
+                authorId,
+            });
 
             res.status(200).json(image);
         } catch (err) {
@@ -79,7 +85,7 @@ class ImageController {
                 next(ApiError.badRequest('Невалидный id'));
             }
 
-            const imageToEdit = await Image.findOne({ where: { id: Number(id) } });
+            const imageToEdit = await Image.findByPk(Number(id));
 
             if (!imageToEdit) {
                 next(ApiError.badRequest('Изображение не найдено'));
@@ -114,6 +120,40 @@ class ImageController {
         }
     };
 
+    addToCollection = async (req, res, next) => {
+        try {
+            const { id, collectionId } = req.body;
+            const { userId } = req.user;
+
+            let imgCol;
+
+            if (!collectionId) {
+                const userCollections = await Collection.findAll({ where: { userId } });
+
+                if (await this.isImageExistInCollection(id, userCollections[0].id)) {
+                    return res.status(200).json('Изображение уже есть в коллекции');
+                }
+
+                if (userCollections) {
+                    imgCol = await ImageCollection.create({
+                        imageId: id,
+                        collectionId: userCollections[0].id,
+                    });
+                }
+            } else {
+                if (await this.isImageExistInCollection(id, collectionId)) {
+                    return res.status(200).json('Изображение уже есть в коллекции');
+                }
+
+                imgCol = await ImageCollection.create({ imageId: id, collectionId });
+            }
+
+            res.status(200).json(imgCol);
+        } catch (err) {
+            next(ApiError.badRequest(err.message));
+        }
+    };
+
     // [admin] POST api/image/delete
     // req.body = { id: number | string }
     deleteImage = async (req, res, next) => {
@@ -136,6 +176,13 @@ class ImageController {
         } catch (err) {
             next(ApiError.badRequest(err.message));
         }
+    };
+
+    isImageExistInCollection = async (imageId, collectionId) => {
+        const isExist = await ImageCollection.findOne({
+            where: { imageId, collectionId },
+        });
+        return !!isExist;
     };
 }
 
