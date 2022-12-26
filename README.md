@@ -1,5 +1,3 @@
-# QuickRef
-
 ## Запуск приложения
 
 `yarn install`
