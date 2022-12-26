@@ -34,8 +34,6 @@ class CollectionController {
 
             const imgCol = await ImageCollection.findAll({ where: { collectionId } });
 
-            console.log('getCollection imgCol', imgCol);
-
             if (id !== 'fav') {
                 const collection = await Collection.findOne({ where: { id: Number(id), userId } });
 
@@ -115,7 +113,7 @@ class CollectionController {
             }
 
             const trimmedName = name ? name.trim() : name;
-            console.log(trimmedName);
+
             // one user cannot have multiple collections with the same name
             if (name) {
                 const isExist = await Collection.findOne({ where: { name: trimmedName, userId } });

@@ -10,9 +10,7 @@ const {
     isNotNullIdTypeValid,
 } = require('./utils');
 
-// todo delete logs
 const createToken = (userId, isAdmin) => {
-    console.log('createToken', isAdmin);
     const token = jwt.sign({ userId, isAdmin }, process.env.JWT_SECRET, {
         expiresIn: '48h',
     });
@@ -23,8 +21,6 @@ class UserController {
     // GET /api/user/
     getUser = async (req, res, next) => {
         try {
-            console.log('isAuth req.user', req.user);
-
             const { userId } = req.user;
 
             if (!userId) {
@@ -46,7 +42,6 @@ class UserController {
     // GET /api/user/auth
     isAuth = async (req, res, next) => {
         try {
-            console.log('isAuth req.user', req.user);
             const { userId, isAdmin } = req.user;
 
             if (!userId) {

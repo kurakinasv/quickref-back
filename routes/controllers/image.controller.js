@@ -77,7 +77,6 @@ class ImageController {
     // req.body = { id: number | string, source?: string,
     //              authorId?: number | string, categoryId?: number | string }
     editImageInfo = async (req, res, next) => {
-        console.log('id', req.id);
         try {
             const { id, source, authorId, categoryId } = req.body;
 
