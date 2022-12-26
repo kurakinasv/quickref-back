@@ -1,9 +1,6 @@
 const sequelize = require('../db');
-const { DataTypes } = require('sequelize'); // для описания полей того или иного типа
+const { DataTypes } = require('sequelize');
 
-// Описываем модели данных
-
-// todo delete created_at, last_update, date_upload
 const User = sequelize.define('user', {
     email: { type: DataTypes.STRING, allowNull: false, unique: true },
     password: { type: DataTypes.STRING, allowNull: false },
@@ -27,7 +24,6 @@ const Image = sequelize.define('image', {
     name: { type: DataTypes.STRING, allowNull: false, unique: true },
     date_upload: { type: DataTypes.DATE },
     source: { type: DataTypes.STRING, allowNull: false, unique: true },
-    // orientation: { type: DataTypes.STRING },
 });
 
 const Category = sequelize.define('category', {
@@ -44,7 +40,6 @@ const Author = sequelize.define('author', {
 
 const ImageCollection = sequelize.define('image_collection', {});
 
-// Описываем типы связей
 User.hasMany(Collection);
 Collection.belongsTo(User);
 
@@ -53,9 +48,6 @@ Image.belongsTo(Category);
 
 Author.hasMany(Image);
 Image.belongsTo(Author);
-
-// User.belongsToMany(Image)
-// Image.belongsToMany(User)
 
 Collection.belongsToMany(Image, { through: ImageCollection });
 Image.belongsToMany(Collection, { through: ImageCollection });

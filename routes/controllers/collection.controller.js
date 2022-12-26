@@ -156,7 +156,7 @@ class CollectionController {
         }
     };
 
-    // POST api/collection/delete
+    // DELETE api/collection/delete
     // req.body = { toDeleteId: string | number }
     deleteCollection = async (req, res, next) => {
         try {

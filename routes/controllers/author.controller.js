@@ -7,7 +7,7 @@ const {
     checkNotNullStringValue,
 } = require('./utils');
 
-class UserController {
+class AuthorController {
     // GET api/author/
     getAllAuthors = async (req, res, next) => {
         try {
@@ -148,7 +148,7 @@ class UserController {
         }
     };
 
-    // [admin] POST api/author/delete
+    // [admin] DELETE api/author/delete
     // req.body = { toDeleteId: number | string }
     deleteAuthor = async (req, res, next) => {
         try {
@@ -177,4 +177,4 @@ class UserController {
     };
 }
 
-module.exports = new UserController();
+module.exports = new AuthorController();

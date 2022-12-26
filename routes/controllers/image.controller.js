@@ -120,6 +120,7 @@ class ImageController {
         }
     };
 
+    // POST api/image/add
     addToCollection = async (req, res, next) => {
         try {
             const { id, collectionId } = req.body;
@@ -154,7 +155,49 @@ class ImageController {
         }
     };
 
-    // [admin] POST api/image/delete
+    // DELETE api/image/remove
+    removeFromCollection = async (req, res, next) => {
+        try {
+            const { id: toRemoveId, collectionId } = req.body;
+            const { userId } = req.user;
+
+            // if collection id is not passed use default collection
+            if (!collectionId) {
+                const userCollections = await Collection.findAll({ where: { userId } });
+                const defaultCollectionId = userCollections[0].id;
+
+                if (!(await this.isImageExistInCollection(toRemoveId, defaultCollectionId))) {
+                    return next(ApiError.badRequest('Изображение не найдено в коллекции'));
+                }
+
+                const imgCol = await ImageCollection.findOne({
+                    where: { imageId: toRemoveId, collectionId: defaultCollectionId },
+                });
+
+                if (!imgCol) {
+                    return next(ApiError.badRequest('Не найдено'));
+                }
+                await ImageCollection.destroy({
+                    where: {
+                        imageId: toRemoveId,
+                        collectionId: defaultCollectionId,
+                    },
+                });
+            } else {
+                if (await this.isImageExistInCollection(toRemoveId, collectionId)) {
+                    return next(ApiError.badRequest('Изображение не найдено в коллекции'));
+                }
+
+                await ImageCollection.destroy({ imageId: toRemoveId, collectionId });
+            }
+
+            res.status(200).json({ message: 'Изображение было удалено из коллекции' });
+        } catch (err) {
+            next(ApiError.badRequest(err.message));
+        }
+    };
+
+    // [admin] DELETE api/image/delete
     // req.body = { id: number | string }
     deleteImage = async (req, res, next) => {
         try {

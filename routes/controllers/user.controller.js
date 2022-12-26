@@ -10,10 +10,6 @@ const {
     isNotNullIdTypeValid,
 } = require('./utils');
 
-// .create({params}) - создание сущности
-// .findAll() - возвращает все записи
-// .findOne({ where: {...} }) - возвращает одну запись
-
 // todo delete logs
 const createToken = (userId, isAdmin) => {
     console.log('createToken', isAdmin);
@@ -24,6 +20,7 @@ const createToken = (userId, isAdmin) => {
 };
 
 class UserController {
+    // GET /api/user/
     getUser = async (req, res, next) => {
         try {
             console.log('isAuth req.user', req.user);
@@ -45,6 +42,7 @@ class UserController {
             next(ApiError.badRequest(err.message));
         }
     };
+
     // GET /api/user/auth
     isAuth = async (req, res, next) => {
         try {
